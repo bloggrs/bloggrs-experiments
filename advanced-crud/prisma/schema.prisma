@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Category {
+    id                  Int                 @id @default(autoincrement())
+    title               String              @db.VarChar(255)
+    slug                String              @db.VarChar(255)
+
+    posts               Post[]
+
+    deletedAt           DateTime            @default(now())  @db.DateTime(0)
+    createdAt           DateTime            @default(now())  @db.DateTime(0)
+    updatedAt           DateTime            @default(now())  @db.DateTime(0)
+
+    @@map("categories")
+}
+
+model Comment {
+    id                  Int                 @id @default(autoincrement())
+    content             String              @db.LongText
+
+    authorName          String
+    post                Post                @relation(fields: [postId], references: [id])
+    postId              Int
+
+    deletedAt           DateTime            @default(now())  @db.DateTime(0)
+    createdAt           DateTime            @default(now())  @db.DateTime(0)
+    updatedAt           DateTime            @default(now())  @db.DateTime(0)
+
+    @@map("comments")
+}
+
+model Post {
+    id                  Int                 @id @default(autoincrement())
+    title               String              @db.VarChar(255)
+    slug                String              @db.VarChar(255)
+    content             String              @db.LongText
+    excerpt             String              @db.LongText
+    status              PostStatus          @default(DRAFT)
+
+    comments            Comment[]
+    categories          Category[]
+
+    deletedAt           DateTime            @default(now())  @db.DateTime(0)
+    createdAt           DateTime            @default(now())  @db.DateTime(0)
+    updatedAt           DateTime            @default(now())  @db.DateTime(0)
+
+    @@map("posts")
+}
+
+enum PostStatus {
+    DRAFT
+    PUBLISHED
+    ARCHIVED
+}
