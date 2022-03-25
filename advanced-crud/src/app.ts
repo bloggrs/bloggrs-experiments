@@ -1,13 +1,13 @@
 import "dotenv/config";
 import "express-async-errors";
 import express, { Application, Request, Response } from "express";
-import prisma from "./prisma";
 
 import http, { Server } from "http";
 import cors from "cors";
 import compression from "compression";
 import bodyParser from "body-parser";
 import morgan from "morgan";
+import errorHandler from "./middlewares/errorHandler";
 
 const logger = morgan("dev");
 
@@ -31,10 +31,11 @@ app.get("*", (req, res) =>
   })
 );
 
+app.use(errorHandler);
+
 if (require.main === module) {
     const PORT: number = Number(process.env.PORT) || 4000;
     server.listen(PORT, () => console.log("Running on port: ", PORT));
-  }
+}
   
-  export default app;
-  
+export default app;

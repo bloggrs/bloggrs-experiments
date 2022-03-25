@@ -11,7 +11,7 @@ export class ErrorHandler extends Error {
     this.message = message;
     this.errors = errors;
   }
-  get404 = (type: string) => {
+  static get404 = (type: string) => {
     return new ErrorHandler(404, `${type} not found`);
   };
 }
