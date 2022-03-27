@@ -4,13 +4,6 @@ import { ObjectSchema } from "yup";
 
 export default (yupSchema: ObjectSchema,strict: boolean = true, options?: any) => {
     return async (req: Request, res: Response, next: NextFunction) => {
-        if (process.env.DEBUG)
-            console.log({
-                yupSchema,
-                requestBody: req.body.body ? req.body.body : req.body,
-                query: req.query,
-                params: req.params
-            })
        try {
            await yupSchema.validate({
                 requestBody: req.body.body ? req.body.body : req.body,

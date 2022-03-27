@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from "express";
 
 export default (err: any, req: Request, res: Response, next: NextFunction) => {
     const error: Error | ErrorHandler = err;
-    
+    console.log(JSON.stringify(err),999, Object.keys(err))
     if (process.env.DEBUG) console.table(err)
 
     if (err instanceof ErrorHandler) return handleError(err, res);
