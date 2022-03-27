@@ -5,7 +5,7 @@ import validateRequest from "../../middlewares/validateRequest";
 
 import * as yup from "yup";
 
-import { createCategory, findByPkOr404 } from "./categories-dal";
+import { createCategory, findAll, findByPkOr404 } from "./categories-dal";
 
 const app = express();
 
@@ -20,11 +20,23 @@ app.get("/categories/:category_id",[
 ], async (req: Request,res: Response) => {
     const { query: options } = req
     const { category_id } = req.params;
-    const category = await findByPkOr404(Number(category_id), options);
+    const [ category, response_metadata ] = await findByPkOr404(Number(category_id), options);
     return res.json({
         code: 200,
         message: "success",
-        data: category
+        data: category,
+        response_metadata
+    })
+})
+
+app.get("/categories", async (req: Request, res: Response) => {
+    const { query: pagination } = req;
+    const [ categories, response_metadata ] = await findAll(pagination);
+    return res.json({
+        code: 200,
+        message: "success",
+        data: categories,
+        response_metadata
     })
 })
 
@@ -40,11 +52,12 @@ app.post("/categories", validateRequest(
     })
 ), async (req: Request, res: Response) => {
     const { body: data } = req;
-    const category = await createCategory(data);
+    const [ category, response_metadata ] = await createCategory(data);
     return res.json({
         code: 201,
         message: "success",
-        data: category
+        data: category,
+        response_metadata
     })
 })
 

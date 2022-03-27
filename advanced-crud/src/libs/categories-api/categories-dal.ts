@@ -1,9 +1,20 @@
 import { Prisma, Category } from "@prisma/client";
 import prisma from "../../prisma";
 import { ErrorHandler } from "../../utils/error";
-import { ExpandField, ExpandFieldOptional, GeneralOptions } from "./types";
+import { ExpandField, ExpandFieldOptional, GeneralOptions, PaginationOptions, ResponseMetadata } from "./types";
 
-const parseOptions = (options: GeneralOptions) => {
+const parsePaginationOptions = (pagination: PaginationOptions) => {
+    const parsed: Prisma.CategoryFindManyArgs = { take: 3 }
+    const { cursor, limit } = pagination;
+    if (limit) parsed.take = limit;
+    if (cursor) {
+        const decoded_id: string = atob(cursor);
+        parsed.where = { id: { gte: Number(decoded_id) } }
+    }
+    return parsed;
+}
+
+const parseGeneralOptions = (options: GeneralOptions) => {
     const keys: Array<keyof GeneralOptions> = Object.keys(options) as Array<keyof GeneralOptions>;
     const parsed: any = {};
     for (let x: number = 0; x < keys.length; x++){
@@ -20,17 +31,37 @@ const parseOptions = (options: GeneralOptions) => {
     return parsed
 }
 
-export const findByPkOr404 = async (pk: number, options: GeneralOptions): Promise<Category> => {
+export const findByPkOr404 = async (pk: number, options: GeneralOptions): Promise<Array<Category | ResponseMetadata>> => {
     const where: Prisma.CategoryWhereUniqueInput = { id: pk };
-    const extra = parseOptions(options);
+    const extra = parseGeneralOptions(options);
     const category = await prisma.category.findUnique({ where, ...extra });
     if (!category) throw ErrorHandler.get404("Category");
-    return category;
+    return [ category, { } ]
 }
 
-export const createCategory = async (data: Prisma.CategoryCreateWithoutPostsInput): Promise<Category> => {
+export const findAll = async (pagination: PaginationOptions): Promise<Array<Array<Category> | ResponseMetadata>> => {
+    const args = parsePaginationOptions(pagination);
+    console.log(args, pagination)
+    const categories: Array<Category> = await prisma.category.findMany({ ...args })
+    const response_metadata: ResponseMetadata = { next_cursor: "" }
+
+    if (categories.length) {
+        const lastCategory: Category = categories[categories.length - 1];
+    
+        const next_category: Category | null = await prisma.category.findFirst({
+            where: {
+                id: { "gt": lastCategory.id }
+            }
+        })
+        const next_cursor: string = next_category ? btoa(String(next_category.id)) : ""
+        response_metadata.next_cursor = next_cursor;
+    }
+    return [ categories, response_metadata ]
+}
+
+export const createCategory = async (data: Prisma.CategoryCreateWithoutPostsInput): Promise<Array<Category | ResponseMetadata>> => {
     const category: Category = await prisma.category.create({ data });
-    return category;
+    return [ category, { } ]
 }
 
 // export default {
