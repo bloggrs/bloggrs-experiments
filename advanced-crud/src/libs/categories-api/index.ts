@@ -5,11 +5,11 @@ import validateRequest from "../../middlewares/validateRequest";
 
 import * as yup from "yup";
 
-import { findByPkOr404 } from "./categories-dal";
+import { createCategory, findByPkOr404 } from "./categories-dal";
 
 const app = express();
 
-app.get("/category/:category_id",[
+app.get("/categories/:category_id",[
     validateRequest(
         yup.object().shape({
             params: yup.object().shape({
@@ -24,7 +24,27 @@ app.get("/category/:category_id",[
     return res.json({
         code: 200,
         message: "success",
-        data: { category }
+        data: category
+    })
+})
+
+app.post("/categories", validateRequest(
+    yup.object().shape({
+        requestBody: yup.object().shape({
+            title: yup.string().required(),
+            slug: yup.string().required(),
+            deletedAt: yup.string(),
+            createdAt: yup.string(),
+            updatedAt: yup.string(),
+        })
+    })
+), async (req: Request, res: Response) => {
+    const { body: data } = req;
+    const category = await createCategory(data);
+    return res.json({
+        code: 201,
+        message: "success",
+        data: category
     })
 })
 
