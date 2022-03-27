@@ -1,11 +1,31 @@
 import { Prisma } from "@prisma/client";
 import prisma from "../../prisma";
 import { ErrorHandler } from "../../utils/error";
+import { ExpandField, ExpandFieldOptional, GeneralOptions } from "./types";
 
-export const findByPkOr404 = async (pk: number) => {
+const parseOptions = (options: GeneralOptions) => {
+    const keys: Array<keyof GeneralOptions> = Object.keys(options) as Array<keyof GeneralOptions>;
+    const parsed: any = {};
+    for (let x: number = 0; x < keys.length; x++){
+        const key = keys[x];
+        switch (key) {
+            case "expand":
+                if (typeof(options[key]) === "undefined") break;
+                const value: ExpandFieldOptional = options[key];
+                const include: Record<string, boolean> = {}
+                value?.forEach(val => include[val] = true)
+                parsed.include = include;
+        }
+    }
+    console.table(parsed)
+    return parsed
+}
+
+export const findByPkOr404 = async (pk: number, options: GeneralOptions) => {
     const where: Prisma.CategoryWhereUniqueInput = { id: pk };
-    const category = await prisma.category.findUnique({ where });
-    if (category) throw ErrorHandler.get404("Category");
+    const extra = parseOptions(options);
+    const category = await prisma.category.findUnique({ where, ...extra });
+    if (!category) throw ErrorHandler.get404("Category");
     return category;
 }
 

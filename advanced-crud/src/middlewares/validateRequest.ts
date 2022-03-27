@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { ErrorHandler } from "../utils/error";
-import { ObjectSchema } from "yup";
+// import { ObjectSchema } from "@types/yup";
 
-export default (yupSchema: ObjectSchema,strict: boolean = true, options?: any) => {
+export default (yupSchema: any,strict: boolean = true, options?: any) => {
     return async (req: Request, res: Response, next: NextFunction) => {
         if (process.env.DEBUG)
             console.log({
