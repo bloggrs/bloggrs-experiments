@@ -6,7 +6,6 @@ export default (yupSchema: any,strict: boolean = true, options?: any) => {
     return async (req: Request, res: Response, next: NextFunction) => {
         if (process.env.DEBUG)
             console.log({
-                yupSchema,
                 requestBody: req.body.body ? req.body.body : req.body,
                 query: req.query,
                 params: req.params
