@@ -9,6 +9,8 @@ import bodyParser from "body-parser";
 import morgan from "morgan";
 import errorHandler from "./middlewares/errorHandler";
 
+import categoriesAPI from "./libs/categories-api";
+
 const logger = morgan("dev");
 
 const app: Application = express();
@@ -22,6 +24,9 @@ app.use(express.json({ limit: "2mb" }));
 app.use(logger);
 
 const PATHNAME_PREFIX: string = "/api/v1";
+
+app.use(PATHNAME_PREFIX, categoriesAPI);
+
 
 app.get("*", (req, res) =>
   res.status(404).json({

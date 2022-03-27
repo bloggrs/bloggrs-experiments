@@ -1,11 +1,31 @@
-import { Prisma } from "@prisma/client";
+import { Category, Prisma } from "@prisma/client";
 import prisma from "../../prisma";
 import { ErrorHandler } from "../../utils/error";
+import { CategoriesBaseOptions, GeneralOptions } from "./types";
 
-export const findByPkOr404 = async (pk: number) => {
+const parseOptions = (options: GeneralOptions) => {
+    const keys: Array<keyof GeneralOptions> = Object.keys(options) as Array<keyof GeneralOptions>;
+    const args: Record<string, any> = {}
+    for (const key of keys){
+        const value: any = options[key];
+        switch (key) {
+            case "expand": 
+                const include: Prisma.CategoryInclude = {}
+                value.forEach((expand_key: keyof Prisma.CategoryInclude) => {
+                    include[expand_key] = true
+                });
+                args.include = include;
+        } 
+    }
+    return args
+}
+
+export const findByPkOr404 = async (pk: number, options: GeneralOptions): Promise<Category> => {
     const where: Prisma.CategoryWhereUniqueInput = { id: pk };
-    const category = await prisma.category.findUnique({ where });
-    if (category) throw ErrorHandler.get404("Category");
+    const extra = parseOptions(options);
+    console.log(extra, options)
+    const category = await prisma.category.findUnique({ where, ...extra });
+    if (!category) throw ErrorHandler.get404("Category");
     return category;
 }
 
