@@ -28,6 +28,7 @@ const parseGeneralOptions = (options: GeneralOptions) => {
                     include[expand_key] = true;
                 })
                 parsed.include = include;
+                break;
         }
     }
     return parsed

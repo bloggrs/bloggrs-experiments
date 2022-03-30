@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import { ErrorHandler } from "../utils/error";
-// import { ObjectSchema } from "@types/yup";
 
 export default (yupSchema: any,strict: boolean = true, options?: any) => {
     return async (req: Request, res: Response, next: NextFunction) => {
@@ -17,7 +16,7 @@ export default (yupSchema: any,strict: boolean = true, options?: any) => {
                 params: req.params
            }, { abortEarly: false, strict })
        } catch (err: any) {
-           throw new ErrorHandler(403,"Validation error",err.errors || [1])
+           throw new ErrorHandler(403, "Validation error", err.errors)
        }
         next()
     }
