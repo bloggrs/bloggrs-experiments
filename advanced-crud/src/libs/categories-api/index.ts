@@ -6,6 +6,8 @@ import validateRequest from "../../middlewares/validateRequest";
 import * as yup from "yup";
 
 import { createCategory, deleteCategory, findAll, findByPkOr404, updateCategory } from "./categories-dal";
+import { cache_hsg, useRedis } from "../../redisClient";
+import { RedisClientType } from "@node-redis/client";
 
 const { param_id } = require("../../utils/validations")
 
@@ -25,9 +27,19 @@ app.get(PATHNAME_PREFIX + "/:category_id",[
         })
     )
 ], async (req: Request,res: Response) => {
+    const client: any = await useRedis();
+
     const { query: options } = req
     const { category_id } = req.params;
-    const category = await findByPkOr404(Number(category_id), options);
+
+    const endpoint = PATHNAME_PREFIX + category_id
+    const args = [ Number(category_id), options ]
+    const category = await cache_hsg({
+        endpoint, args,
+        fallback: findByPkOr404,
+        expiresAt: new Date().getTime() + 3 * (60 * 1000) // 3 hours
+    })
+
     return res.status(200).json({
         code: 200,
         message: "success",
