@@ -6,8 +6,7 @@ import validateRequest from "../../middlewares/validateRequest";
 import * as yup from "yup";
 
 import { createCategory, deleteCategory, findAll, findByPkOr404, updateCategory } from "./categories-dal";
-import { cache_hsg, useRedis } from "../../redisClient";
-import { RedisClientType } from "@node-redis/client";
+import { cache_hgs } from "../../redisClient";
 
 const { param_id } = require("../../utils/validations")
 
@@ -15,7 +14,7 @@ const app: Application = express();
 
 const PATHNAME_PREFIX: string = "/categories"
 
-app.get(PATHNAME_PREFIX + "/:category_id",[
+app.get(PATHNAME_PREFIX + "/:category_id", [
     validateRequest(
         yup.object().shape({
             params: yup.object().shape({
@@ -27,17 +26,18 @@ app.get(PATHNAME_PREFIX + "/:category_id",[
         })
     )
 ], async (req: Request,res: Response) => {
-    const client: any = await useRedis();
 
     const { query: options } = req
     const { category_id } = req.params;
 
     const endpoint = PATHNAME_PREFIX + category_id
     const args = [ Number(category_id), options ]
-    const category = await cache_hsg({
+    const category = await cache_hgs({
         endpoint, args,
         fallback: findByPkOr404,
-        expiresAt: new Date().getTime() + 3 * (60 * 1000) // 3 hours
+        expiresAt: new Date(
+            new Date().getTime() + 3 * (60 * 1000)
+        ) // 3 hours
     })
 
     return res.status(200).json({

@@ -2,9 +2,16 @@ import { createClient, RedisClientType } from "redis";
 
 export type SetCacheType = {
     endpoint: string;
-    args: string[];
+    args: any[];
     value: string;
     expiresAt?: Date;
+}
+
+export type CacheHitGetSetType = {
+    endpoint: string;
+    args: any[];
+    fallback: any;
+    expiresAt?: Date;  
 }
 
 const redisClient: RedisClientType = createClient({
@@ -28,26 +35,37 @@ export const getCache = async ({ endpoint, args }: any) => {
 }
 
 export const setCache = async ({ endpoint, args, value, expiresAt }: SetCacheType) => {
-    const key = JSON.stringify({ endpoint, args });
+    const key = JSON.stringify({ endpoint, args }); 
     const set_args: any = {}
     if (expiresAt) {
         const expiresAt__milliseconds = expiresAt?.getTime() - new Date().getTime()
         const expiresAt__seconds = expiresAt__milliseconds / 100
-        set_args.EX = expiresAt__seconds
+        set_args.EX = Math.round(expiresAt__seconds)
     }
     await redisClient.set(key, value, set_args);
 }
 
-// cache hit or set/get
-export const cache_hsg = async ({ endpoint, args, fallback, expiresAt }: any) => {
+// cache hit or get/set
+export const cache_hgs = async ({ endpoint, args, fallback, expiresAt }: CacheHitGetSetType) => {
     const cached_value = await getCache({ endpoint, args });
-    if (cached_value) return JSON.parse(cached_value);
-    const value = await fallback.apply(undefined, args);
-    await setCache({ 
-        endpoint, 
+    const set_cache_args = {
+        endpoint,
         args,
         expiresAt,
-        value: JSON.stringify(value) 
+    }
+    if (cached_value) {
+        // cache revalidation
+        fallback.apply(undefined, args)
+            .then((value: string) => setCache({ 
+                ...set_cache_args, 
+                value: JSON.stringify(value) 
+            }))
+        return JSON.parse(cached_value);
+    }
+    const value = await fallback.apply(undefined, args);
+    await setCache({
+        ...set_cache_args,
+        value: JSON.stringify(value)
     })
     return value;
 }
