@@ -26,7 +26,6 @@ app.get(PATHNAME_PREFIX + "/:category_id", [
         })
     )
 ], async (req: Request,res: Response) => {
-
     const { query: options } = req
     const { category_id } = req.params;
 

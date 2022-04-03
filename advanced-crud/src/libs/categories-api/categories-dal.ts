@@ -3,7 +3,7 @@ import prisma from "../../prisma";
 import { ErrorHandler } from "../../utils/error";
 import { ExpandFieldOptional, GeneralOptions, PaginationOptions, ResponseMetadata, UpdateCategoryArgs } from "./types";
 
-const parsePaginationOptions = (pagination: PaginationOptions) => {
+export const parsePaginationOptions = (pagination: PaginationOptions) => {
     const parsed: Prisma.CategoryFindManyArgs = { take: 3 }
     const { cursor, limit } = pagination;
     if (limit) parsed.take = limit;
@@ -14,7 +14,7 @@ const parsePaginationOptions = (pagination: PaginationOptions) => {
     return parsed;
 }
 
-const parseGeneralOptions = (options: GeneralOptions) => {
+export const parseGeneralOptions = (options: GeneralOptions) => {
     const keys: Array<keyof GeneralOptions> = Object.keys(options) as Array<keyof GeneralOptions>;
     const parsed: any = {};
     for (let x: number = 0; x < keys.length; x++){
