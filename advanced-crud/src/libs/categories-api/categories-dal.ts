@@ -34,10 +34,14 @@ export const parseGeneralOptions = (options: GeneralOptions) => {
     return parsed
 }
 
-export const findByPkOr404 = async (pk: number, options: GeneralOptions): Promise<Category> => {
+export const findByPkOr404 = async (
+    pk: number, 
+    options: GeneralOptions,
+    fn: Function = prisma.category.findUnique
+): Promise<Category> => {
     const where: Prisma.CategoryWhereUniqueInput = { id: pk };
     const extra = parseGeneralOptions(options);
-    const category = await prisma.category.findUnique({ where, ...extra });
+    const category = await fn({ where, ...extra });
     if (!category) throw ErrorHandler.get404("Category");
     return category
 }

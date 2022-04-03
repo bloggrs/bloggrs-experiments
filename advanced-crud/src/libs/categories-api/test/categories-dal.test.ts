@@ -1,6 +1,7 @@
 import { assert, expect } from "chai";
+import { prismaMock } from "../../../prismaMock";
 
-const { 
+import { 
     parsePaginationOptions,
     parseGeneralOptions,
     findByPkOr404,
@@ -8,7 +9,7 @@ const {
     createCategory,
     updateCategory,
     deleteCategory
-} = require("../categories-dal")
+} from "../categories-dal"
 
 describe("parsePaginationOptions function", () => {
     it("returns pagination options", (done: jest.DoneCallback) => {
@@ -73,6 +74,61 @@ describe("parseGeneralOptions function", () => {
                     {}
                 ],
                 output: {}
+            },
+            {
+                input: [
+                    { 
+                        expand: []
+                    }
+                ],
+                output: {
+                    include: {}
+                }
+            },
+            {
+                input: [
+                    {
+                        expand: [ "posts" ]
+                    }
+                ],
+                output: {
+                    include: {
+                        posts: true
+                    }
+                }
+            },
+            {
+                input: [
+                    {
+                        expand: [ "posts", "_count" ]
+                    }
+                ],
+                output: {
+                    include: {
+                        posts: true,
+                        _count: true
+                    }
+                }
+            },
+        ]
+        for (let item of io) {
+            const output = parseGeneralOptions(...item.input);
+            assert.deepStrictEqual(output, item.output);
+        }
+        done();
+    })
+})
+
+describe("findByPkOr404 function", () => {
+    it("returns category object", (done: jest.DoneCallback) => {
+        const io = [
+            {
+                input: [
+                    1,
+                    { },
+                    prismaMock.category.findUnique.mockResolvedValue
+                ],
+                output: prismaMock.category.findUnique.mockResolvedValue()
             },
             {
                 input: [
