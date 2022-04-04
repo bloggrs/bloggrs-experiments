@@ -1,5 +1,6 @@
 import { assert, expect } from "chai";
 import { prismaMock } from "../../../prismaMock";
+import { ErrorHandler } from "../../../utils/error";
 
 import { 
     parsePaginationOptions,
@@ -13,7 +14,7 @@ import {
 
 describe("parsePaginationOptions function", () => {
     it("returns pagination options", (done: jest.DoneCallback) => {
-        const io = [
+        const io: any = [
             {
                 input: [
                     {
@@ -59,7 +60,8 @@ describe("parsePaginationOptions function", () => {
             },
         ]
         for (let item of io) {
-            const output = parsePaginationOptions(...item.input);
+            const input: [ any ] = item.input
+            const output = parsePaginationOptions(...input);
             assert.deepStrictEqual(output, item.output);
         }
         done();
@@ -68,7 +70,7 @@ describe("parsePaginationOptions function", () => {
 
 describe("parseGeneralOptions function", () => {
     it("returns general options", (done: jest.DoneCallback) => {
-        const io = [
+        const io: any = [
             {
                 input: [
                     {}
@@ -112,7 +114,8 @@ describe("parseGeneralOptions function", () => {
             },
         ]
         for (let item of io) {
-            const output = parseGeneralOptions(...item.input);
+            const input: [ any ] = item.input;
+            const output = parseGeneralOptions(...input);
             assert.deepStrictEqual(output, item.output);
         }
         done();
@@ -120,56 +123,47 @@ describe("parseGeneralOptions function", () => {
 })
 
 describe("findByPkOr404 function", () => {
-    it("returns category object", (done: jest.DoneCallback) => {
-        const io = [
+    it("returns category object", async () => {
+        const categories = [
+            {
+                id: 1,
+                title: "Category Name",
+                slug: "category-name",
+                deletedAt: null,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            },
+            {
+                id: 2,
+                title: "Category Name",
+                slug: "category-name",
+                deletedAt: null,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            }
+        ]
+        const io: any = [
             {
                 input: [
                     1,
                     { },
-                    prismaMock.category.findUnique.mockResolvedValue
+                    async () => categories.find(c => c.id == 1)
                 ],
-                output: prismaMock.category.findUnique.mockResolvedValue()
+                output: categories[0]
             },
             {
                 input: [
-                    { 
-                        expand: []
-                    }
+                    4,
+                    { },
+                    async () => categories.find(c => c.id == 4)
                 ],
-                output: {
-                    include: {}
-                }
-            },
-            {
-                input: [
-                    {
-                        expand: [ "posts" ]
-                    }
-                ],
-                output: {
-                    include: {
-                        posts: true
-                    }
-                }
-            },
-            {
-                input: [
-                    {
-                        expand: [ "posts", "_count" ]
-                    }
-                ],
-                output: {
-                    include: {
-                        posts: true,
-                        _count: true
-                    }
-                }
+                output: ErrorHandler.get404("Category").message
             },
         ]
         for (let item of io) {
-            const output = parseGeneralOptions(...item.input);
+            const input: [ number, object, Function ] = item.input;
+            const output: any = await findByPkOr404(...input).catch(err => err.message);
             assert.deepStrictEqual(output, item.output);
         }
-        done();
     })
 })
