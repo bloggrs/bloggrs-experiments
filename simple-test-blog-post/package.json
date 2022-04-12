@@ -1,0 +1,20 @@
+{
+  "name": "simple-test-blog-post",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "mocha './**/*.spec.js'",
+    "test:coverage": "nyc --reporter=text mocha './**/*.spec.js'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "mocha": "^9.2.2"
+  },
+  "devDependencies": {
+    "nyc": "^15.1.0"
+  }
+}
